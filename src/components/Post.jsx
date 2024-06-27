@@ -1,56 +1,115 @@
+/* eslint-disable react/prop-types */
+import { useState } from 'react';
+import { format, formatDistanceToNow } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+
 import styles from './Post.module.css';
 
 import { Comment } from './Comment';
 import { Avatar } from './Avatar';
 
-export function Post() {
+export function Post({ author, publishedAt, content }) {
+  const [comments, setComments] = useState([]);
+  const [newCommentText, setNewCommentText] = useState('');
+
+  const isNewCommentInputEmpty = newCommentText.length === 0;
+
+  const publishedDateFormatted = format(
+    publishedAt,
+    "d 'de' LLLL 'às' HH:mm'h'",
+    {
+      locale: ptBR,
+    }
+  );
+
+  const publishedDateRelativeToNow = formatDistanceToNow(publishedAt, {
+    locale: ptBR,
+    addSuffix: true,
+  });
+
+  function handleCreateNewComment() {
+    event.preventDefault();
+    setComments([...comments, newCommentText]);
+    setNewCommentText('');
+  }
+
+  function handleNewCommentChange() {
+    event.target.setCustomValidity('');
+    setNewCommentText(event.target.value);
+  }
+
+  function deleteComment(comment) {
+    const commentsWithoutDeletedOne = comments.filter(
+      (oldComment) => oldComment !== comment
+    );
+
+    setComments(commentsWithoutDeletedOne);
+  }
+
+  function handleNewCommentInvalid() {
+    event.target.setCustomValidity('Esse campo é obrigatório');
+  }
+
   return (
     <article className={styles.post}>
       <header>
         <div className={styles.author}>
-          <Avatar src="https://github.com/gabrielcsg.png" />
+          <Avatar src={author.avatarUrl} />
           <div className={styles.authorInfo}>
-            <strong>Gabriel Castro</strong>
-            <span>Web Developer</span>
+            <strong>{author.name}</strong>
+            <span>{author.role}</span>
           </div>
         </div>
 
-        <time title="11 de Maio às 08:13" dateTime="2022-05-11 08:13:30">
-          Publicado há 1h
+        <time
+          title={publishedDateFormatted}
+          dateTime={publishedAt.toISOString()}
+        >
+          {publishedDateRelativeToNow}
         </time>
       </header>
 
       <div className={styles.content}>
-        <p>Fala galera</p>
-        <p>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sequi,
-          placeat ratione tempore dignissimos quibusdam officiis eligendi
-          incidunt facilis nulla harum qui repellat ullam architecto accusantium
-          est, in exercitationem unde doloribus.
-        </p>
-        <p>
-          <a href="#">jane.design/doctorcare</a>
-        </p>
-        <p>
-          <a href="">#novoprojeto</a> <a href="">#nlw</a>{' '}
-          <a href="">#rocketseat</a>
-        </p>
+        {content.map((item) => {
+          if (item.type === 'paragraph') {
+            return <p key={item.content}>{item.content}</p>;
+          } else if (item.type === 'link') {
+            return (
+              <p key={item.content}>
+                <a href="#">{item.content}</a>
+              </p>
+            );
+          }
+        })}
       </div>
 
-      <form className={styles.commentForm}>
+      <form onSubmit={handleCreateNewComment} className={styles.commentForm}>
         <strong>Deixe seu feedback</strong>
 
-        <textarea placeholder="Deixe seu comentário..." />
+        <textarea
+          name="comment"
+          onChange={handleNewCommentChange}
+          placeholder="Deixe seu comentário..."
+          value={newCommentText}
+          required
+          onInvalid={handleNewCommentInvalid}
+        />
 
         <footer>
-          <button type="submit">Publicar</button>
+          <button type="submit" disabled={isNewCommentInputEmpty}>
+            Publicar
+          </button>
         </footer>
       </form>
 
       <div className={styles.commentList}>
-        <Comment />
-        <Comment />
-        <Comment />
+        {comments.map((comment) => (
+          <Comment
+            key={comment}
+            content={comment}
+            onDeleteComment={deleteComment}
+          />
+        ))}
       </div>
     </article>
   );
