@@ -58,14 +58,6 @@
   line-height: 1.6;
 }
 
-.avatar {
-  width: calc(3rem + 12px);
-  height: calc(3rem + 12px);
-  border-radius: 8px;
-  border: 4px solid var(--gray-800);
-  outline: 2px solid var(--green-500);
-}
-
 .commentForm {
   width: 100%;
   margin-top: 1.5rem;
@@ -96,6 +88,7 @@
   max-height: 0;
 }
 
+/* quando ocorrer um focus em qualquer elemento dentro do commentForm */
 .commentForm:focus-within footer {
   visibility: visible;
   max-height: none;
@@ -115,4 +108,8 @@
 
 .commentForm button[type='submit']:hover {
   background: var(--green-300);
+}
+
+.commentList {
+  margin-top: 2rem;
 }
